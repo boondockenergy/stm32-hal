@@ -23,6 +23,15 @@ use crate::pac::comp::{
     C2CSR,
     C3CSR,
     C4CSR,
+};
+
+#[cfg(any(
+    feature = "g473",
+    feature = "g474",
+    feature = "g483",
+    feature = "g484",
+))]
+use crate::pac::comp::{
     C5CSR,
     C6CSR,
     C7CSR,
@@ -351,9 +360,19 @@ cfg_if! {
         make_comp!(C2CSR, c2csr, comp2);
         make_comp!(C3CSR, c3csr, comp3);
         make_comp!(C4CSR, c4csr, comp4);
-        make_comp!(C5CSR, c5csr, comp5);
-        make_comp!(C6CSR, c6csr, comp6);
-        make_comp!(C7CSR, c7csr, comp7);
+
+        cfg_if! {
+            if #[cfg(any(
+                feature = "g473",
+                feature = "g474",
+                feature = "g483",
+                feature = "g484",
+            ))] {
+                make_comp!(C5CSR, c5csr, comp5);
+                make_comp!(C6CSR, c6csr, comp6);
+                make_comp!(C7CSR, c7csr, comp7);
+            }
+        }
     } else if #[cfg(any(feature = "l4x6"))] {
         make_comp!(COMP1_CSR, comp1_csr, comp1);
         make_comp!(COMP2_CSR, comp2_csr, comp2);
