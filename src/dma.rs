@@ -142,6 +142,8 @@ pub enum DmaInput {
     Tim4Up = 71,
     Sai1A = 108,
     Sai1B = 109,
+    FmacRead = 110,
+    FmacWrite = 111,
     // todo: These SAI2 values are bogus; can't find on G4 DMA mux.
     Sai2A = 203,
     Sai2B = 204,

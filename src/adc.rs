@@ -75,7 +75,19 @@ pub enum Trigger {
     Tim6Trgo = 0b01101,
     Tim15Trgo = 0b01110,
     Tim3Cc4 = 0b01111,
-    // todo: Fill in remaining ones.
+    Tim20Trgo = 0b10000,
+    Tim20Cc1 = 0b10001,
+    Tim20Cc2 = 0b10011,
+    Tim20Cc3 = 0b10100,
+    HrtimAdcTrig1 = 0b10101,
+    HrtimAdcTrig3 = 0b10110,
+    HrtimAdcTrig5 = 0b10111,
+    HrtimAdcTrig6 = 0b11000,
+    HrtimAdcTrig7 = 0b11001,
+    HrtimAdcTrig8 = 0b11010,
+    HrtimAdcTrig9 = 0b11011,
+    HrtimAdcTrig10 = 0b11100,
+    LptimOut = 0b11101,
     Tim7Trgo = 0b11110,
 }
 

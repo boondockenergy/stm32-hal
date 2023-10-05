@@ -449,6 +449,8 @@ macro_rules! make_timer {
             pub fn enable_interrupt(&mut self, interrupt: TimerInterrupt) {
                 match interrupt {
                     TimerInterrupt::Update => self.regs.dier.modify(|_, w| w.uie().set_bit()),
+                    #[cfg(feature = "g4")]
+                    TimerInterrupt::CaptureCompare1 => self.regs.dier.modify(|_, w| w.cc1ie().set_bit()),
                     // todo: Only DIER is in PAC, or some CCs. PAC BUG? Only avail on some timers/MCUs?
                     // TimerInterrupt::Trigger => self.regs.dier.modify(|_, w| w.tie().set_bit()),
                     // TimerInterrupt::CaptureCompare1 => self.regs.dier.modify(|_, w| w.cc1ie().set_bit()),
@@ -503,6 +505,8 @@ macro_rules! make_timer {
                             .regs
                             .sr
                             .write(|w| w.bits(0xffff_ffff).uif().clear_bit()),
+                        #[cfg(feature="g4")]
+                        TimerInterrupt::CaptureCompare1 => self.regs.sr.write(|w| w.bits(0xffff_ffff).cc1if().clear_bit()),
                         // todo: Only DIER is in PAC, or some CCs. PAC BUG? Only avail on some timers?
                         // TimerInterrupt::Trigger => self.regs.sr.write(|w| w.bits(0xffff_ffff).tif().clear_bit()),
                         // TimerInterrupt::CaptureCompare1 => self.regs.sr.write(|w| w.bits(0xffff_ffff).cc1if().clear_bit()),
@@ -2226,5 +2230,10 @@ cfg_if! {
 make_timer!(TIM20, tim20, 2, u16);
 #[cfg(any(feature = "f303"))]
 cc_4_channels!(TIM20, u16);
+
+#[cfg(any(feature = "g4"))]
+make_timer!(TIM20, tim20, 2, u32);
+#[cfg(any(feature = "g4"))]
+cc_4_channels!(TIM20, u32);
 
 // todo: Remove the final "true/false" for adv ctrl. You need a sep macro like you do for ccx_channel!.
