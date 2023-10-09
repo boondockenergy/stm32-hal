@@ -1150,6 +1150,17 @@ macro_rules! hal {
                 // }
             }
 
+            /// Configure a channel offset to be subtracted from each reading
+            #[cfg(feature = "g4")]
+            pub fn set_offset(&self, channel: u8, offset: u16) {
+                self.regs.ofr1.modify(|_,w| {
+                    w.offset1_ch().variant(channel);
+                    w.offset1().variant(offset);
+                    w.offset1_en().set_bit();
+                    w.offsetpos().clear_bit();
+                    w.saten().clear_bit()
+                });
+            }
 
         /// Print the (raw) contents of the status register.
     pub fn read_status(&self) -> u32 {

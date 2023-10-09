@@ -231,7 +231,10 @@ pub enum HighFrequencyMode {
     // High frequency interface mode compatible to AHB > 80MHz
     Medium = 0b01,
     // High frequency interface mode compatible to AHB > 160MHz
-    High = 0b10
+    High = 0b10,
+    // RM says these are reserved, but the official ST HAL defines these
+    // as Automatic mode https://github.com/STMicroelectronics/STM32CubeG4/blob/master/Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_dac.h#L342
+    Automatic = 0b11,
 }
 
 #[derive(Clone)]
