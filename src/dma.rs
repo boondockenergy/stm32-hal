@@ -596,7 +596,7 @@ where
 {
     /// Initialize a DMA peripheral, including enabling and resetting
     /// its RCC peripheral clock.
-    pub fn new(regs: D) -> Self {
+    pub fn new(regs: D, periph: DmaPeriph) -> Self {
         // todo: Enable RCC for DMA 2 etc!
         free(|_| {
             let rcc = unsafe { &(*RCC::ptr()) };
@@ -606,7 +606,10 @@ where
                 } else if #[cfg(feature = "g0")] {
                     rcc_en_reset!(ahb1, dma, rcc);
                 } else {
-                    rcc_en_reset!(ahb1, dma1, rcc);
+                    match periph {
+                        DmaPeriph::Dma1 => { rcc_en_reset!(ahb1, dma1, rcc); },
+                        DmaPeriph::Dma2 => { rcc_en_reset!(ahb1, dma2, rcc); }
+                    };
                 }
             }
         });
