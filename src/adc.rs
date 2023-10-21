@@ -16,7 +16,7 @@ use paste::paste;
 #[cfg(not(any(feature = "f4", feature = "l552", feature = "h5")))]
 use crate::dma::{self, ChannelCfg, DmaChannel};
 
-#[cfg(any(feature = "f3", feature = "l4"))]
+//#[cfg(any(feature = "f3", feature = "l4"))]
 use crate::dma::DmaInput;
 
 // Address of the ADCinterval voltage reference. This address is found in the User manual. It appears
@@ -923,6 +923,8 @@ macro_rules! hal {
                     self.set_sequence(*channel, i as u8 + 1); // + 1, since sequences start at 1.
                 }
 
+                self.set_sequence_len(sequence.len() as u8);
+
                 // L4 RM: In Single conversion mode, the ADC performs once all the conversions of the channels.
                 // This mode is started with the CONT bit at 0 by either:
                 // • Setting the ADSTART bit in the ADC_CR register (for a regular channel)
@@ -965,7 +967,7 @@ macro_rules! hal {
             #[cfg(not(any(feature = "f4", feature = "l552", feature = "h5")))]
             /// Take a reading, using DMA. Sets conversion sequence; no need to set it directly.
             /// Note that the `channel` argument is unused on F3 and L4, since it is hard-coded,
-            /// and can't be configured using the DMAMUX peripheral. (`dma::mux()` fn).
+            /// and can't be configured using the DMAUX peripheral. (`dma::mux()` fn).
             pub unsafe fn read_dma(
                 &mut self, buf: &mut [u16],
                 adc_channels: &[u8],
@@ -977,6 +979,27 @@ macro_rules! hal {
             // where
             //     D: Deref<Target = dma_p::RegisterBlock>,
             // {
+
+                // Configure the DMA mux on G4
+                #[cfg(feature = "g4")]
+                match self.device {
+                    AdcDevice::One => {
+                        dma::mux(
+                            dma_periph,
+                            dma_channel,
+                            DmaInput::Adc1
+                        );
+                    }
+                    AdcDevice::Two => {
+                        dma::mux(
+                            dma_periph,
+                            dma_channel,
+                            DmaInput::Adc2
+                        );
+                    }
+                    _ => unimplemented!(),
+                }
+
                 let (ptr, len) = (buf.as_mut_ptr(), buf.len());
                 // The software is allowed to write (dmaen and dmacfg) only when ADSTART=0 and JADSTART=0 (which
                 // ensures that no conversion is ongoing)
@@ -1024,6 +1047,7 @@ macro_rules! hal {
                         }
                     }
                 }
+
 
                 let mut seq_len = 0;
                 for (i, ch) in adc_channels.iter().enumerate() {
