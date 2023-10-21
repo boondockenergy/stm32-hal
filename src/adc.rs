@@ -330,6 +330,9 @@ pub struct AdcConfig {
     pub cal_single_ended: Option<u16>,
     /// Optional calibration data for differential measurements.
     pub cal_differential: Option<u16>,
+    /// Reset the ADC on creation. Disable reset for subsequent ADCs within
+    /// the same group. Ie ADC1 and ADC2 on the G4 share the same reset line
+    pub reset: bool
 }
 
 impl Default for AdcConfig {
@@ -340,6 +343,7 @@ impl Default for AdcConfig {
             operation_mode: OperationMode::OneShot,
             cal_single_ended: None,
             cal_differential: None,
+            reset: true
         }
     }
 }
@@ -380,19 +384,21 @@ macro_rules! hal {
                         let rcc = unsafe { &(*RCC::ptr()) };
                         let common_regs = unsafe { &*pac::$ADC_COMMON::ptr() };
 
-                        paste! {
-                            cfg_if! {
-                                if #[cfg(any(feature = "f3", feature = "h7"))] {
-                                    rcc_en_reset!(ahb1, [<adc $rcc_num>], rcc);
-                                } else if #[cfg(feature = "f4")] {
-                                    rcc_en_reset!(2, [<adc $rcc_num>], rcc);
-                                } else if #[cfg(any(feature = "h7"))] {
-                                // todo: 1 and 2 are on ahb1enr etc. 3 is on ahb4. 3 won't work here.
-                                    rcc_en_reset!(ahb1, [<adc $rcc_num>], rcc);
-                                } else if #[cfg(any(feature = "g4"))] {
-                                    rcc_en_reset!(ahb2, [<adc $rcc_num>], rcc);
-                                } else {  // ie L4, L5, G0(?)
-                                    rcc_en_reset!(ahb2, adc, rcc);
+                        if result.cfg.reset {
+                            paste! {
+                                cfg_if! {
+                                    if #[cfg(any(feature = "f3", feature = "h7"))] {
+                                        rcc_en_reset!(ahb1, [<adc $rcc_num>], rcc);
+                                    } else if #[cfg(feature = "f4")] {
+                                        rcc_en_reset!(2, [<adc $rcc_num>], rcc);
+                                    } else if #[cfg(any(feature = "h7"))] {
+                                    // todo: 1 and 2 are on ahb1enr etc. 3 is on ahb4. 3 won't work here.
+                                        rcc_en_reset!(ahb1, [<adc $rcc_num>], rcc);
+                                    } else if #[cfg(any(feature = "g4"))] {
+                                        rcc_en_reset!(ahb2, [<adc $rcc_num>], rcc);
+                                    } else {  // ie L4, L5, G0(?)
+                                        rcc_en_reset!(ahb2, adc, rcc);
+                                    }
                                 }
                             }
                         }
