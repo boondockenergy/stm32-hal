@@ -43,7 +43,7 @@ pub enum DacMode {
     /// DAC channel is connected to external pin with buffer disabled
     NormExternalOnlyBufDis = 0b010,
     /// DAC channel is connected to on chip peripherals with Buffer disabled
-    NormExternalAndPeriphBufDis = 0b011,
+    NormPeriphOnlyBufDis = 0b011,
     /// DAC channel is connected to external pin with Buffer enabled. (Sample and Hold)
     ShNormExternalOnlyBufEn = 0b100,
     /// DAC channel is connected to external pin and to on chip peripherals with buffer. (Sample and Hold)

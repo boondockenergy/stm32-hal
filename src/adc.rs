@@ -286,6 +286,15 @@ impl Default for Align {
     }
 }
 
+#[cfg(feature = "g4")]
+#[derive(Clone, Copy)]
+#[repr(u8)]
+pub enum Watchdog {
+    Watchdog1,
+    Watchdog2,
+    Watchdog3
+}
+
 // todo impl
 // /// Ratio options for oversampling.
 // #[derive(Clone, Copy)]
@@ -431,7 +440,7 @@ macro_rules! hal {
                     result.enable();
 
                     // Set up VDDA only after the ADC is otherwise enabled.
-                    // result.setup_vdda(clock_cfg);
+                    result.setup_vdda(clock_cfg);
 
                     // Don't set continuous mode until after configuring VDDA, since it needs
                     // to take a oneshot reading.
@@ -997,6 +1006,27 @@ macro_rules! hal {
                             DmaInput::Adc2
                         );
                     }
+                    AdcDevice::Three => {
+                        dma::mux(
+                            dma_periph,
+                            dma_channel,
+                            DmaInput::Adc3
+                        );
+                    }
+                    AdcDevice::Four => {
+                        dma::mux(
+                            dma_periph,
+                            dma_channel,
+                            DmaInput::Adc4
+                        );
+                    }
+                    AdcDevice::Five => {
+                        dma::mux(
+                            dma_periph,
+                            dma_channel,
+                            DmaInput::Adc5
+                        );
+                    }
                     _ => unimplemented!(),
                 }
 
@@ -1190,6 +1220,39 @@ macro_rules! hal {
                     w.offsetpos().clear_bit();
                     w.saten().clear_bit()
                 });
+            }
+
+            #[cfg(feature = "g4")]
+            pub fn enable_watchdog(&self, id: Watchdog, channel: u8, low_thresh: f32, high_thresh: f32)
+            {
+                let lt = low_thresh / (self.vdda_calibrated / 4_096.);
+                let ht = high_thresh / (self.vdda_calibrated / 4_096.);
+
+                match id {
+                    Watchdog::Watchdog1 => {
+
+                        self.regs.cfgr.modify(|_,w| {
+                            w.awd1ch().variant(channel)
+                        });
+
+                        self.regs.tr1.modify(|_,w| {
+                            w.ht1().variant(ht as u16);
+                            w.lt1().variant(lt as u16)
+                        });
+
+                        self.regs.cfgr.modify(|_,w| {
+                            // Single channel
+                            w.awd1sgl().set_bit();
+                            w.awd1en().set_bit()
+                        });
+                    },
+                    Watchdog::Watchdog2 => {
+
+                    },
+                    Watchdog::Watchdog3 => {
+
+                    }
+                }
             }
 
         /// Print the (raw) contents of the status register.
